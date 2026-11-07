@@ -1,4 +1,5 @@
 # RepoGuard
+![CI](https://github.com/Godwinzin/repoguard/actions/workflows/ci.yml/badge.svg)
 
 **A health checker for GitHub repositories.** Connect your GitHub account, pick a repository, and RepoGuard audits it for committed secrets, vulnerable dependencies, missing documentation and weak project structure. Every problem comes with a plain-English explanation of why it matters and how to fix it. Turn on monitoring and it re-audits on every push and tells you when something new appears.
 
