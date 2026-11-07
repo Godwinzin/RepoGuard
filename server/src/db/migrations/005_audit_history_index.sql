@@ -1,0 +1,1 @@
+CREATE INDEX idx_audits_repo_id_desc ON audits (repository_id, id DESC);
