@@ -84,7 +84,12 @@
 
 body {
   margin: 0;
-  font-family: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Inter Variable",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.55;
@@ -1730,16 +1735,6 @@ tbody tr:hover td {
     padding: 20px 14px 56px;
   }
 
-  .topbar-inner {
-    gap: 12px;
-    padding: 8px 14px;
-  }
-
-  .nav-link span,
-  .topbar-name {
-    display: none; /* icons only on phones */
-  }
-
   .page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1757,7 +1752,17 @@ tbody tr:hover td {
     text-align: left;
   }
 
-  /* On phones the dropdown spans the screen instead of hanging off the bell */
+  /* Long file paths and titles may break anywhere instead of pushing the page wider */
+  .finding-title,
+  .finding-body code {
+    overflow-wrap: anywhere;
+  }
+
+  .finding-body {
+    padding-left: 18px;
+  }
+
+  /* On phones the notification dropdown spans the screen instead of hanging off the bell */
   .dropdown {
     position: fixed;
     top: 60px;
@@ -1775,5 +1780,326 @@ tbody tr:hover td {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+/* =========================================================
+   Top bar: account menu, hamburger, drawer
+   ========================================================= */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto; /* pushes the actions to the right edge */
+}
+
+/* ---------- Avatar and its menu ---------- */
+.user-menu {
+  position: relative;
+}
+
+.avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 3px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.avatar-btn:hover,
+.avatar-btn[aria-expanded="true"] {
+  background: var(--surface-2);
+}
+
+.avatar-btn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.avatar-caret {
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s;
+}
+
+.avatar-btn[aria-expanded="true"] .avatar-caret {
+  transform: rotate(180deg);
+}
+
+.avatar-lg {
+  width: 44px;
+  height: 44px;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  width: min(290px, 92vw);
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  animation: pop-in 0.15s ease;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+.popover-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.popover-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.popover-id strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popover-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.popover-item:hover {
+  background: var(--surface-2);
+}
+
+.popover-item:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.popover-item-danger {
+  color: var(--danger);
+}
+
+.popover-item-danger:hover {
+  background: var(--danger-soft);
+}
+
+.popover-ext {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+/* ---------- Hamburger: three bars of different lengths ---------- */
+.burger {
+  display: none; /* only shown on small screens, see below */
+  flex-direction: column;
+  align-items: flex-end; /* bars hug the right edge, which gives the staggered look */
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.burger:hover {
+  background: var(--surface-2);
+}
+
+.burger:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.burger-bar {
+  display: block;
+  height: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: width 0.2s ease;
+}
+
+.burger-bar:nth-child(1) {
+  width: 22px;
+  background: var(--primary); /* a touch of brand colour on the top bar */
+}
+
+.burger-bar:nth-child(2),
+.burger-bar:nth-child(3) {
+  width: 22px;
+}
+
+/* On hover or focus the bars even out */
+.burger:hover .burger-bar,
+.burger:focus-visible .burger-bar {
+  width: 22px;
+}
+
+/* ---------- Drawer ---------- */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none; /* closed: clicks go through to the page */
+  transition: opacity 0.25s ease;
+}
+
+.drawer-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  width: min(300px, 82vw); /* never covers the whole screen */
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  transform: translateX(100%); /* parked off-screen to the right */
+  visibility: hidden; /* so keyboard users can't tab into a closed drawer */
+  /* when closing, wait for the slide to finish before hiding */
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.28s;
+}
+
+.drawer-open {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* The X gives a little spin as the drawer arrives */
+.drawer-close svg {
+  transition: transform 0.35s ease;
+}
+
+.drawer-open .drawer-close svg {
+  transform: rotate(180deg);
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 12px;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: var(--text-2);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.drawer-link:hover {
+  background: var(--surface-2);
+}
+
+.drawer-link-active,
+.drawer-link-active:hover {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+/* Links slide in one after the other when the drawer opens */
+.drawer-open .drawer-link {
+  animation: link-in 0.3s ease both;
+}
+
+.drawer-open .drawer-link:nth-child(1) {
+  animation-delay: 0.08s;
+}
+
+.drawer-open .drawer-link:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+@keyframes link-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+.drawer-foot {
+  margin-top: auto; /* sticks to the bottom of the drawer */
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* ---------- Switch between the desktop menu and the drawer ---------- */
+@media (max-width: 720px) {
+  .nav-desktop {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .topbar-inner {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+}
+
+@media (min-width: 721px) {
+  .drawer,
+  .drawer-backdrop {
+    display: none;
   }
 }

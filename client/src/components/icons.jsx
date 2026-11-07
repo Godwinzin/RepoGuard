@@ -83,3 +83,31 @@ export const XIcon = (props) => (
     <path d="m6 6 12 12" />
   </Svg>
 );
+export const LogOutIcon = (props) => (
+  <Svg {...props}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="m16 17 5-5-5-5" />
+    <path d="M21 12H9" />
+  </Svg>
+);
+
+export const UserIcon = (props) => (
+  <Svg {...props}>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </Svg>
+);
+
+export const ChevronDownIcon = (props) => (
+  <Svg {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </Svg>
+);
+
+export const ExternalIcon = (props) => (
+  <Svg {...props}>
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+  </Svg>
+);

@@ -47,16 +47,16 @@ app.use(
 );
 
 app.use("/health", healthRouter);
-// TEMPORARY while deploying: shows how the server sees your connection. Delete after use.
-app.get("/debug/ip", (req, res) => {
-  res.json({ ip: req.ip, secure: req.secure, forwardedFor: req.get("x-forwarded-for") ?? null });
-});
 app.use("/auth", authRouter);
 app.use("/repos", reposRouter);
 app.use("/notifications", notificationsRouter);
 app.use(auditsRouter);
 app.use(monitoringRouter);
 app.use(recommendationsRouter);
+// A friendly answer for anyone (or any bot) who opens the API address directly
+app.get("/", (req, res) => {
+  res.json({ service: "RepoGuard API", status: "ok" });
+});
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
