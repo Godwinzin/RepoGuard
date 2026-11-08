@@ -25,10 +25,10 @@ const REPO_WITH_SCORE = `
   FROM repositories r
   LEFT JOIN LATERAL (
     SELECT a.score, a.finished_at,
+          (SELECT count(*)::int FROM audit_findings f
+           WHERE f.audit_id = a.id AND NOT f.accepted) AS finding_count,
            (SELECT count(*)::int FROM audit_findings f
-            WHERE f.audit_id = a.id) AS finding_count,
-           (SELECT count(*)::int FROM audit_findings f
-            WHERE f.audit_id = a.id AND f.severity = 'critical') AS critical_count
+            WHERE f.audit_id = a.id AND f.severity = 'critical' AND NOT f.accepted) AS critical_count
     FROM audits a
     WHERE a.repository_id = r.id AND a.status = 'done'
     ORDER BY a.id DESC

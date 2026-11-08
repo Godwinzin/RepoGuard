@@ -12,6 +12,7 @@ import { projectRules } from "./rules/project.js";
 import { readmeRules } from "./rules/readme.js";
 import { dependencyRules } from "./rules/dependencies.js";
 import { secretRules } from "./rules/secrets.js";
+import { calculateScore } from "./score.js";
 
 const rules = [
   ...structureRules,
@@ -21,19 +22,12 @@ const rules = [
   ...secretRules,
 ];
 
-const PENALTY = { critical: 25, high: 15, medium: 8, low: 3, info: 0 };
-
 // An audit running longer than this is cancelled. One stuck in queued/running for longer
 // than STALE_AFTER_MINUTES is failed automatically when someone requests a new one.
 const AUDIT_TIME_LIMIT_MS = 120_000;
 const STALE_AFTER_MINUTES = 5;
 
 class AuditTimeoutError extends Error {}
-
-export function calculateScore(findings) {
-  const penalty = findings.reduce((sum, f) => sum + PENALTY[f.severity], 0);
-  return Math.max(0, 100 - penalty);
-}
 
 // Called by the API route: just records the request. Fast.
 export async function createAudit(repositoryId, triggeredBy = "manual") {
@@ -144,7 +138,19 @@ export async function processAudit(auditId) {
     const { snapshot, findings } = await runChecks(audit, auditId, controller.signal);
     clearTimeout(timer);
 
-    const score = calculateScore(findings);
+       // Apply the risks this repository has already accepted
+    const acceptedRes = await query(
+      "SELECT fingerprint, reason FROM accepted_findings WHERE repository_id = $1",
+      [audit.repository_id]
+    );
+    const acceptedByFingerprint = new Map(acceptedRes.rows.map((r) => [r.fingerprint, r.reason]));
+
+    for (const f of findings) {
+      f.accepted = acceptedByFingerprint.has(f.fingerprint);
+      f.acceptedReason = acceptedByFingerprint.get(f.fingerprint) ?? null;
+    }
+
+    const score = calculateScore(findings); // accepted findings are skipped inside
 
     // Findings and final status are saved together
     const client = await pool.connect();
@@ -154,12 +160,15 @@ export async function processAudit(auditId) {
       for (const f of findings) {
         await client.query(
           `INSERT INTO audit_findings
-             (audit_id, rule_id, category, severity, title, message, fix, file_path, fingerprint)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-          [auditId, f.ruleId, f.category, f.severity, f.title, f.message, f.fix, f.filePath, f.fingerprint]
+             (audit_id, rule_id, category, severity, title, message, fix, file_path,
+              fingerprint, accepted, accepted_reason)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+          [
+            auditId, f.ruleId, f.category, f.severity, f.title, f.message, f.fix,
+            f.filePath, f.fingerprint, f.accepted, f.acceptedReason,
+          ]
         );
       }
-
       await client.query(
         `UPDATE audits
          SET status = 'done', score = $1, commit_sha = $2, finished_at = now()

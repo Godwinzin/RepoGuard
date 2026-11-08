@@ -2267,3 +2267,136 @@ tbody tr:hover td {
     gap: 12px;
   }
 }
+/* =========================================================
+   Accepted risks
+   ========================================================= */
+.detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.finding-accepted {
+  border-left-color: var(--border);
+  opacity: 0.85;
+}
+
+.finding-actions {
+  margin-top: 16px;
+}
+
+.accepted-note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+
+.accepted-note p {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.accept-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+
+.accept-form label {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: 0;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+.accept-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.accept-actions .muted-small {
+  margin-right: auto;
+}
+
+.accepted-section {
+  margin-top: 28px;
+}
+
+.accepted-section > summary {
+  padding: 10px 0;
+  color: var(--muted);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.accepted-section[open] > summary {
+  margin-bottom: 4px;
+}
+
+.accepted-intro {
+  margin-bottom: 12px;
+}
+
+.accepted-empty {
+  margin-top: 8px;
+}
+
+.accepted-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accepted-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.accepted-item-main {
+  min-width: 0;
+}
+
+.accepted-item-main strong,
+.accepted-item-main code,
+.accepted-item-main p {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.accepted-item-main code {
+  width: fit-content;
+  margin: 4px 0;
+}

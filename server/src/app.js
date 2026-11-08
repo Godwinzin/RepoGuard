@@ -14,6 +14,7 @@ import monitoringRouter from "./routes/monitoring.js";
 import notificationsRouter from "./routes/notifications.js";
 import recommendationsRouter from "./routes/recommendations.js";
 import webhooksRouter from "./routes/webhooks.js";
+import acceptedRouter from "./routes/accepted.js";
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use("/notifications", notificationsRouter);
 app.use(auditsRouter);
 app.use(monitoringRouter);
 app.use(recommendationsRouter);
+app.use(acceptedRouter);
 // A friendly answer for anyone (or any bot) who opens the API address directly
 app.get("/", (req, res) => {
   res.json({ service: "RepoGuard API", status: "ok" });

@@ -1,16 +1,18 @@
 import { Link, useParams } from "react-router-dom";
+import { api } from "../api";
 import { useAudit } from "../useAudit";
 import { useNow } from "../useNow";
+import { usePageTitle } from "../usePageTitle";
+import { useToast } from "../toast/useToast";
 import ScoreRing from "../components/ScoreRing";
 import SeverityBadge from "../components/SeverityBadge";
 import FindingCard from "../components/FindingCard";
 import ProgressNotice from "../components/ProgressNotice";
+import AiSuggestions from "../components/AiSuggestions";
 import Stat from "../components/Stat";
 import { ErrorState } from "../components/ErrorState";
 import { FindingSkeleton, Skeleton } from "../components/Skeleton";
 import { formatDate, splitName } from "../format";
-import AiSuggestions from "../components/AiSuggestions";
-import { usePageTitle } from "../usePageTitle";
 
 const SEVERITIES = ["critical", "high", "medium", "low", "info"];
 
@@ -37,6 +39,8 @@ export default function Report() {
   const { auditId } = useParams();
   const { data: audit, error, loading, reload } = useAudit(auditId);
   const now = useNow(); // hooks always come before any early return
+  const toast = useToast();
+
   const titleText = !audit
     ? "Report"
     : audit.status === "done"
@@ -46,20 +50,53 @@ export default function Report() {
         : `Auditing… · ${audit.full_name}`;
   usePageTitle(titleText);
 
+  // Both handlers tell the card whether it worked, so the card knows when to close its form
+  async function accept(finding, reason) {
+    try {
+      await api(`/repos/${audit.repository_id}/accepted-findings`, {
+        method: "POST",
+        body: { fingerprint: finding.fingerprint, reason },
+      });
+      toast.success("Risk accepted. It no longer counts against your score.");
+      reload();
+      return true;
+    } catch (err) {
+      toast.error(err.message);
+      return false;
+    }
+  }
+
+  async function restore(finding) {
+    try {
+      await api(
+        `/repos/${audit.repository_id}/accepted-findings?fingerprint=${encodeURIComponent(finding.fingerprint)}`,
+        { method: "DELETE" }
+      );
+      toast.success("Restored. It counts toward your score again.");
+      reload();
+      return true;
+    } catch (err) {
+      toast.error(err.message);
+      return false;
+    }
+  }
+
   if (loading) return <ReportSkeleton />;
   if (error) return <ErrorState error={error} onRetry={reload} />;
 
   const inProgress = audit.status === "queued" || audit.status === "running";
   const comparison = audit.comparison;
   const { owner, name } = splitName(audit.full_name);
-  const waited = Math.max(
-    0,
-    Math.floor((now - new Date(audit.created_at).getTime()) / 1000),
-  );
+  const waited = Math.max(0, Math.floor((now - new Date(audit.created_at).getTime()) / 1000));
+
+  // Accepting and restoring only make sense on a repository's latest finished audit
+  const canManage = audit.status === "done" && audit.isLatest;
+  const openFindings = audit.findings.filter((f) => !f.accepted);
+  const acceptedFindings = audit.findings.filter((f) => f.accepted);
 
   const groups = SEVERITIES.map((severity) => ({
     severity,
-    items: audit.findings.filter((f) => f.severity === severity),
+    items: openFindings.filter((f) => f.severity === severity),
   })).filter((group) => group.items.length > 0);
 
   return (
@@ -77,6 +114,12 @@ export default function Report() {
             {audit.commit_sha && ` · commit ${audit.commit_sha.slice(0, 7)}`}
             {audit.finished_at && ` · ${formatDate(audit.finished_at)}`}
           </p>
+          {audit.status === "done" && audit.acceptedCount > 0 && (
+            <p className="muted-small">
+              {audit.acceptedCount} accepted {audit.acceptedCount === 1 ? "risk is" : "risks are"}{" "}
+              not counted in this score.
+            </p>
+          )}
         </div>
         {audit.status === "done" && <ScoreRing score={audit.score} size={84} />}
       </div>
@@ -93,20 +136,14 @@ export default function Report() {
         <div className="callout callout-error">
           <div>
             <strong>This audit couldn't be completed.</strong>
-            <p>
-              {audit.error_message ??
-                "Something went wrong. Please run it again."}
-            </p>
+            <p>{audit.error_message ?? "Something went wrong. Please run it again."}</p>
             <div className="callout-actions">
               {audit.error_code === "github_auth" && (
                 <a className="btn btn-primary btn-sm" href="/api/auth/github">
                   Reconnect GitHub
                 </a>
               )}
-              <Link
-                to={`/repos/${audit.repository_id}`}
-                className="btn btn-secondary btn-sm"
-              >
+              <Link to={`/repos/${audit.repository_id}`} className="btn btn-secondary btn-sm">
                 Back to repository
               </Link>
             </div>
@@ -149,15 +186,26 @@ export default function Report() {
             </>
           ) : (
             <p className="muted-small">
-              This is the first finished audit of this repository, so there is
-              nothing to compare it with yet.
+              This is the first finished audit of this repository, so there is nothing to
+              compare it with yet.
             </p>
           )}
 
-          {audit.findings.length === 0 ? (
+          {!audit.isLatest && (
+            <p className="muted-small">
+              This is an older audit. Open the repository's latest audit to accept or restore
+              risks.
+            </p>
+          )}
+
+          {openFindings.length === 0 ? (
             <div className="state-box">
-              <h2>No problems found</h2>
-              <p>This repository passed every check. Nice work.</p>
+              <h2>{acceptedFindings.length > 0 ? "No open problems" : "No problems found"}</h2>
+              <p>
+                {acceptedFindings.length > 0
+                  ? "Everything left on this report is an accepted risk."
+                  : "This repository passed every check. Nice work."}
+              </p>
             </div>
           ) : (
             groups.map((group) => (
@@ -165,16 +213,41 @@ export default function Report() {
                 <h3 className="section-title section-title-sev">
                   <SeverityBadge severity={group.severity} />
                   <span>
-                    {group.items.length}{" "}
-                    {group.items.length === 1 ? "problem" : "problems"}
+                    {group.items.length} {group.items.length === 1 ? "problem" : "problems"}
                   </span>
                 </h3>
                 {group.items.map((f) => (
-                  <FindingCard key={f.fingerprint} finding={f} />
+                  <FindingCard
+                    key={f.fingerprint}
+                    finding={f}
+                    canManage={canManage}
+                    onAccept={accept}
+                    onRestore={restore}
+                  />
                 ))}
               </section>
             ))
           )}
+
+          {acceptedFindings.length > 0 && (
+            <details className="accepted-section">
+              <summary>Accepted risks ({acceptedFindings.length})</summary>
+              <p className="muted-small accepted-intro">
+                These are excluded from the score.
+                {canManage && " Restore one to count it again."}
+              </p>
+              {acceptedFindings.map((f) => (
+                <FindingCard
+                  key={f.fingerprint}
+                  finding={f}
+                  canManage={canManage}
+                  onAccept={accept}
+                  onRestore={restore}
+                />
+              ))}
+            </details>
+          )}
+
           <AiSuggestions auditId={audit.id} />
         </>
       )}

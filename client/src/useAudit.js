@@ -33,8 +33,9 @@ export function useAudit(auditId) {
     };
   }, [auditId, version]);
 
+   // Keep showing the current report while the fresh one loads
   function reload() {
-    setState((s) => ({ ...s, error: null, loading: true }));
+    setState((s) => (s.error ? { data: null, error: null, loading: true } : s));
     setVersion((v) => v + 1);
   }
 

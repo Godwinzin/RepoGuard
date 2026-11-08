@@ -43,10 +43,10 @@ router.get("/repos/:id/audits", requireAuth, async (req, res, next) => {
 
     const { rows } = await query(
       `SELECT a.id, a.status, a.score, a.commit_sha, a.created_at, a.finished_at,
+                (SELECT count(*)::int FROM audit_findings f
+               WHERE f.audit_id = a.id AND NOT f.accepted) AS finding_count,
               (SELECT count(*)::int FROM audit_findings f
-               WHERE f.audit_id = a.id) AS finding_count,
-              (SELECT count(*)::int FROM audit_findings f
-               WHERE f.audit_id = a.id AND f.severity = 'critical') AS critical_count
+               WHERE f.audit_id = a.id AND f.severity = 'critical' AND NOT f.accepted) AS critical_count
        FROM audits a
        JOIN repositories r ON r.id = a.repository_id
        WHERE r.id = $1 AND r.user_id = $2

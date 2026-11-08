@@ -14,6 +14,7 @@ import { Skeleton, StatSkeleton } from "../components/Skeleton";
 import { AlertIcon, ClockIcon, PlayIcon } from "../components/icons";
 import { formatDate, splitName, timeAgo } from "../format";
 import { usePageTitle } from "../usePageTitle";
+import AcceptedRisks from "../components/AcceptedRisks";
 
 function RepoDetailSkeleton() {
   return (
@@ -255,6 +256,13 @@ export default function RepoDetail() {
             branch={r.default_branch}
             initialEnabled={r.monitoring_enabled}
             onChanged={audits.reload}
+          />
+          <AcceptedRisks
+            repoId={id}
+            onChanged={() => {
+              repo.reload();
+              audits.reload();
+            }}
           />
         </aside>
       </div>
