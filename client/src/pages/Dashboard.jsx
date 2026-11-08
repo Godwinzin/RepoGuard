@@ -7,6 +7,7 @@ import { ErrorState } from "../components/ErrorState";
 import { RepoCardSkeleton, Skeleton, StatSkeleton } from "../components/Skeleton";
 import { AlertIcon, ArrowRightIcon, ClockIcon, FolderIcon, GaugeIcon, ShieldIcon } from "../components/icons";
 import { splitName, timeAgo } from "../format";
+import { usePageTitle } from "../usePageTitle";
 
 function scoreTone(score) {
   if (score === null) return "neutral";
@@ -15,6 +16,7 @@ function scoreTone(score) {
 
 export default function Dashboard() {
   const { data: repos, error, loading, reload } = useApi("/repos");
+   usePageTitle("Repositories");
 
   if (loading) {
     return (
@@ -61,7 +63,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-header-row">
         <div>
           <h1>Repositories</h1>
           <p className="subtitle">{summary}</p>
@@ -127,7 +129,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="repo-card-body">
-                    <ScoreRing score={repo.latest_score} size={64} />
+                    <ScoreRing score={repo.latest_score} size={52} />
                     <div className="repo-card-summary">
                       {hasScore ? (
                         <>

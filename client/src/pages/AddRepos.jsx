@@ -6,12 +6,14 @@ import { useToast } from "../toast/useToast";
 import Button from "../components/Button";
 import { ErrorState } from "../components/ErrorState";
 import { RowSkeleton, Skeleton } from "../components/Skeleton";
+import { usePageTitle } from "../usePageTitle";
 
 export default function AddRepos() {
   const { data: repos, error, loading, reload } = useApi("/repos/github");
   const [search, setSearch] = useState("");
   const [addingId, setAddingId] = useState(null);
   const toast = useToast();
+  usePageTitle("Add repository");
   const navigate = useNavigate();
 
   async function add(repo) {

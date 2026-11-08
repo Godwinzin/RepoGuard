@@ -22,7 +22,7 @@ export function StatSkeleton() {
 
 export function RepoCardSkeleton() {
   return (
-    <div className="repo-card">
+    <div className="repo-card repo-card-skeleton">
       <div className="repo-card-head">
         <Skeleton width={40} height={40} radius="12px" />
         <div className="stack" style={{ flex: 1 }}>

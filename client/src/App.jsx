@@ -8,10 +8,12 @@ import Dashboard from "./pages/Dashboard";
 import AddRepos from "./pages/AddRepos";
 import RepoDetail from "./pages/RepoDetail";
 import Report from "./pages/Report";
+import ScrollToTop from "./components/ScrollToTop";
 
 export default function App() {
   return (
     <BrowserRouter>
+     <ScrollToTop />
       <ToastProvider>
         <AuthProvider>
           <Routes>

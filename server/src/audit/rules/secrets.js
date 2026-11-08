@@ -8,6 +8,8 @@ const MAX_FILES = 150;
 const MAX_FILE_BYTES = 200_000;
 const MAX_FINDINGS = 50;
 
+const TEST_PATH =
+  /(^|\/)(__tests__|tests?|fixtures?|mocks?)\/|\.(test|spec)\.[cm]?[jt]sx?$/i;
 const SKIP_PATH = /(^|\/)(node_modules|dist|build|vendor|coverage|\.git)\//;
 const SKIP_FILE =
   /\.(png|jpe?g|gif|webp|ico|svg|pdf|zip|gz|tar|woff2?|ttf|eot|mp[34]|mov|map|lock)$|\.min\.(js|css)$|(^|\/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml)$/i;
@@ -36,30 +38,38 @@ const secretScan = {
       .filter((p) => ctx.sizeOf(p) > 0 && ctx.sizeOf(p) <= MAX_FILE_BYTES)
       .sort(
         (a, b) =>
-          Number(LIKELY.test(b)) - Number(LIKELY.test(a)) || ctx.sizeOf(a) - ctx.sizeOf(b)
+          Number(LIKELY.test(b)) - Number(LIKELY.test(a)) ||
+          ctx.sizeOf(a) - ctx.sizeOf(b),
       );
 
     const selected = candidates.slice(0, MAX_FILES);
     let failedReads = 0;
 
-    const perFile = await mapLimit(selected, 8, async (path) => {
-      try {
-        const text = await ctx.readFile(path, MAX_FILE_BYTES);
-        if (!text || text.includes("\u0000")) return []; // empty or binary
+    const perFile = await mapLimit(
+      selected,
+      8,
+      async (path) => {
+        try {
+          const text = await ctx.readFile(path, MAX_FILE_BYTES);
+          if (!text || text.includes("\u0000")) return []; // empty or binary
 
-        // The secret value is turned into an ID right here and then dropped
-        return scanText(text).map((hit) => ({
-          path,
-          type: hit.type,
-          severity: hit.severity,
-          line: hit.line,
-          id: secretId(hit.value),
-        }));
-      } catch {
-        failedReads++; // never log file contents or errors that might contain them
-        return [];
-      }
-    }, ctx.signal);
+          // The secret value is turned into an ID right here and then dropped
+          return scanText(text).map((hit) => ({
+            path,
+            type: hit.type,
+            severity: hit.severity,
+            line: hit.line,
+            id: secretId(hit.value),
+          }));
+        } catch (err) {
+          failedReads++;
+          // The path and reason are safe to log. File contents never are.
+          console.error(`[secret-scan] could not read ${path}: ${err.message}`);
+          return [];
+        }
+      },
+      ctx.signal,
+    );
 
     // One finding per distinct secret per file
     const unique = new Map();
@@ -69,27 +79,41 @@ const secretScan = {
     }
     const hits = [...unique.values()];
 
-    const findings = hits.slice(0, MAX_FINDINGS).map((hit) =>
-      finding({
+    const findings = hits.slice(0, MAX_FINDINGS).map((hit) => {
+      const inTests = TEST_PATH.test(hit.path);
+
+      return finding({
         ruleId: "secret-detected",
         category: "security",
-        severity: hit.severity,
-        title: `Possible secret committed: ${hit.type}`,
-        message: `Line ${hit.line} contains what looks like a secret (${hit.type}). Anything committed to Git stays in the history even after you delete it, so treat it as exposed. RepoGuard does not store the value itself.`,
+        severity: inTests ? "low" : hit.severity,
+        title: inTests
+          ? `Possible secret in a test file: ${hit.type}`
+          : `Possible secret committed: ${hit.type}`,
+        message: inTests
+          ? `Line ${hit.line} of a test file contains something that looks like a secret (${hit.type}). If it is a made-up test value, no action is needed. If it is real, treat it as exposed. RepoGuard does not store the value itself.`
+          : `Line ${hit.line} contains what looks like a secret (${hit.type}). Anything committed to Git stays in the history even after you delete it, so treat it as exposed. RepoGuard does not store the value itself.`,
         fix: "Revoke or rotate this credential first. Then remove it from the code and load it from an environment variable instead. Cleaning Git history only helps after the credential has been rotated.",
         filePath: hit.path,
         key: `${hit.type}:${hit.id}`,
-      })
-    );
-
+      });
+    });
     // Be honest about coverage
     const notes = [];
     if (candidates.length > selected.length) {
-      notes.push(`scanned ${selected.length} of ${candidates.length} eligible files`);
+      notes.push(
+        `scanned ${selected.length} of ${candidates.length} eligible files`,
+      );
     }
-    if (failedReads > 0) notes.push(`${failedReads} files could not be read`);
+    // secrets.js, in the notes section
+    if (failedReads > 0) {
+      notes.push(
+        `${failedReads} ${failedReads === 1 ? "file" : "files"} could not be read`,
+      );
+    }
     if (hits.length > MAX_FINDINGS) {
-      notes.push(`${hits.length - MAX_FINDINGS} more possible secrets not listed`);
+      notes.push(
+        `${hits.length - MAX_FINDINGS} more possible secrets not listed`,
+      );
     }
 
     if (notes.length > 0) {
@@ -101,7 +125,7 @@ const secretScan = {
           title: "Secret scan was not complete",
           message: `Coverage was limited: ${notes.join("; ")}. Secrets that were only in files that weren't scanned, or only in older commits, would not appear here.`,
           fix: "For full coverage, enable GitHub's built-in secret scanning on the repository.",
-        })
+        }),
       );
     }
 

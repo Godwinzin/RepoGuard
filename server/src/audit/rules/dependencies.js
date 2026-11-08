@@ -84,15 +84,25 @@ const vulnerableDependencies = {
         const vulnerable = await findVulnerableIds(deps, ctx.signal);
         const shown = vulnerable.slice(0, MAX_VULNERABLE_PACKAGES);
 
-        const detailed = await mapLimit(shown, 5, async (pkg) => {
-          const vulns = await mapLimit(pkg.ids, 3, (id) => getVulnDetails(id), ctx.signal);
-          const advisories = vulns
-            .map((v) => summarizeVuln(v, pkg.name))
-            .sort(
-              (a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity],
+        const detailed = await mapLimit(
+          shown,
+          5,
+          async (pkg) => {
+            const vulns = await mapLimit(
+              pkg.ids,
+              3,
+              (id) => getVulnDetails(id),
+              ctx.signal,
             );
-          return { ...pkg, advisories };
-        }, ctx.signal);
+            const advisories = vulns
+              .map((v) => summarizeVuln(v, pkg.name))
+              .sort(
+                (a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity],
+              );
+            return { ...pkg, advisories };
+          },
+          ctx.signal,
+        );
 
         for (const pkg of detailed) {
           const worst = pkg.advisories[0];
@@ -178,17 +188,22 @@ const outdatedDependencies = {
         ...pkg.devDependencies,
       }).slice(0, MAX_DIRECT_DEPENDENCIES);
 
-      const checks = await mapLimit(names, 8, async (name) => {
-        const installed = lock.packages[`node_modules/${name}`]?.version;
-        if (!installed) return null;
+      const checks = await mapLimit(
+        names,
+        8,
+        async (name) => {
+          const installed = lock.packages[`node_modules/${name}`]?.version;
+          if (!installed) return null;
 
-        const latest = await getLatestVersion(name, ctx.signal);
-        if (!latest) return null;
+          const latest = await getLatestVersion(name, ctx.signal);
+          if (!latest) return null;
 
-        return majorOf(latest) > majorOf(installed)
-          ? { name, installed, latest }
-          : null;
-      }, ctx.signal);
+          return majorOf(latest) > majorOf(installed)
+            ? { name, installed, latest }
+            : null;
+        },
+        ctx.signal,
+      );
 
       const outdated = checks.filter(Boolean);
       if (outdated.length === 0) continue;
@@ -205,7 +220,10 @@ const outdatedDependencies = {
           ruleId: "dependencies-outdated",
           category: "dependencies",
           severity: "low",
-          title: `${outdated.length} dependencies are a major version behind`,
+          title:
+            outdated.length === 1
+              ? "1 dependency is a major version behind"
+              : `${outdated.length} dependencies are a major version behind`,
           message: `Falling far behind makes upgrades harder and means missing security fixes and features. Behind: ${listed}${more}.`,
           fix: "Upgrade one package at a time, read its changelog for breaking changes, and run your tests after each. `npx npm-check-updates` shows what's available.",
           filePath: pkgPath,

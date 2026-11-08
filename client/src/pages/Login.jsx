@@ -3,6 +3,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import Logo from "../components/Logo";
 import { Alert, ErrorState } from "../components/ErrorState";
+import { usePageTitle } from "../usePageTitle";
 
 const FEATURES = [
   "Finds committed secrets, exposed .env files and vulnerable dependencies",
@@ -22,7 +23,8 @@ export default function Login() {
   const { user, loading, error, retry } = useAuth();
   const [params] = useSearchParams();
   const [redirecting, setRedirecting] = useState(false);
-
+  usePageTitle("Log in");
+  
   useEffect(() => {
     // Pressing Back from GitHub can restore this page from the browser cache,
     // with the button still stuck in its "redirecting" state

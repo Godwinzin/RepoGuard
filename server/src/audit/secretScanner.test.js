@@ -33,7 +33,9 @@ test("ignores local database URLs and normal code", () => {
 });
 
 test("flags a password in a remote connection string", () => {
-  const hits = scanText("postgresql://admin:Sup3rS3cretPw@db.myhost.com:5432/app");
+  // Assembled from pieces so this file never contains a complete connection string
+  const url = ["postgresql://admin", ":", "Sup3rS3cretPw", "@db.myhost.com:5432/app"].join("");
+  const hits = scanText(url);
 
   assert.equal(hits.length, 1);
   assert.equal(hits[0].type, "password in a connection string");

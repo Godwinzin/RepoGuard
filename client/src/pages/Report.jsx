@@ -10,6 +10,7 @@ import { ErrorState } from "../components/ErrorState";
 import { FindingSkeleton, Skeleton } from "../components/Skeleton";
 import { formatDate, splitName } from "../format";
 import AiSuggestions from "../components/AiSuggestions";
+import { usePageTitle } from "../usePageTitle";
 
 const SEVERITIES = ["critical", "high", "medium", "low", "info"];
 
@@ -36,6 +37,14 @@ export default function Report() {
   const { auditId } = useParams();
   const { data: audit, error, loading, reload } = useAudit(auditId);
   const now = useNow(); // hooks always come before any early return
+  const titleText = !audit
+    ? "Report"
+    : audit.status === "done"
+      ? `Score ${audit.score} · ${audit.full_name}`
+      : audit.status === "failed"
+        ? `Audit failed · ${audit.full_name}`
+        : `Auditing… · ${audit.full_name}`;
+  usePageTitle(titleText);
 
   if (loading) return <ReportSkeleton />;
   if (error) return <ErrorState error={error} onRetry={reload} />;

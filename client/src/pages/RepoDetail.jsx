@@ -13,6 +13,7 @@ import { ErrorState } from "../components/ErrorState";
 import { Skeleton, StatSkeleton } from "../components/Skeleton";
 import { AlertIcon, ClockIcon, PlayIcon } from "../components/icons";
 import { formatDate, splitName, timeAgo } from "../format";
+import { usePageTitle } from "../usePageTitle";
 
 function RepoDetailSkeleton() {
   return (
@@ -45,6 +46,7 @@ export default function RepoDetail() {
 
   const repo = useApi(`/repos/${id}`);
   const audits = useApi(`/repos/${id}/audits`);
+  usePageTitle(repo.data ? repo.data.full_name : "Repository");
 
   const [running, setRunning] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -135,13 +137,22 @@ export default function RepoDetail() {
               >
                 Cancel
               </Button>
-              <Button variant="danger" size="sm" onClick={removeRepo} loading={removing}>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={removeRepo}
+                loading={removing}
+              >
                 Yes, remove
               </Button>
             </div>
           ) : (
             <>
-              <Button variant="ghost" onClick={() => setConfirming(true)} disabled={running}>
+              <Button
+                variant="ghost"
+                onClick={() => setConfirming(true)}
+                disabled={running}
+              >
                 Remove
               </Button>
               <Button size="lg" onClick={runAudit} loading={running}>
@@ -175,7 +186,12 @@ export default function RepoDetail() {
           value={hasScore ? r.critical_count : "—"}
           label="Critical issues"
         />
-        <Stat icon={<ClockIcon />} tone="blue" value={timeAgo(r.last_audited_at)} label="Last audit" />
+        <Stat
+          icon={<ClockIcon />}
+          tone="blue"
+          value={timeAgo(r.last_audited_at)}
+          label="Last audit"
+        />
       </div>
 
       <div className="detail-grid">
@@ -189,7 +205,7 @@ export default function RepoDetail() {
             </div>
           ) : (
             <div className="table-wrap">
-              <table>
+              <table className="table-stack">
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -203,13 +219,25 @@ export default function RepoDetail() {
                 <tbody>
                   {audits.data.map((a) => (
                     <tr key={a.id}>
-                      <td>{formatDate(a.created_at)}</td>
-                      <td>
-                        <span className={`status status-${a.status}`}>{a.status}</span>
+                      <td data-label="Date">{formatDate(a.created_at)}</td>
+                      <td data-label="Status">
+                        <span className={`status status-${a.status}`}>
+                          {a.status}
+                        </span>
                       </td>
-                      <td>{a.status === "done" ? <ScoreBadge score={a.score} /> : "—"}</td>
-                      <td>{a.status === "done" ? a.finding_count : "—"}</td>
-                      <td>{a.status === "done" ? a.critical_count : "—"}</td>
+                      <td data-label="Score">
+                        {a.status === "done" ? (
+                          <ScoreBadge score={a.score} />
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td data-label="Problems">
+                        {a.status === "done" ? a.finding_count : "—"}
+                      </td>
+                      <td data-label="Critical">
+                        {a.status === "done" ? a.critical_count : "—"}
+                      </td>
                       <td>
                         <Link to={`/audits/${a.id}`}>View report</Link>
                       </td>
