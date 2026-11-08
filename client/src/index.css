@@ -231,17 +231,6 @@ code {
   color: var(--primary-text);
 }
 
-.topbar-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.topbar-name {
-  font-size: 0.92rem;
-  font-weight: 600;
-}
-
 .avatar {
   width: 32px;
   height: 32px;
