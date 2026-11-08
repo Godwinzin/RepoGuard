@@ -123,7 +123,7 @@ export default function AiSuggestions({ auditId }) {
                     </pre>
                     <div className="ai-card-foot">
                       <span className="muted-small">
-                        AI-generated draft · {rec.model}
+                        AI-generated draft
                       </span>
                       <div className="actions">
                         <Button
