@@ -38,6 +38,7 @@
 - **Automatic monitoring.** A GitHub webhook triggers a new audit on every push to the default branch, and you get an in-app notification when new problems appear.
 - **AI suggestions** for a missing `.env.example` and a README draft, built only from names and structure. No source code and no secret values are sent to the AI provider.
 - **A responsive dashboard** with skeleton loaders, friendly error messages, toasts, a notification bell and automatic light and dark mode.
+- **Account deletion.** Settings has a Delete my account button that removes your data, deletes the webhooks RepoGuard created, and revokes its authorization on GitHub.
 
 ## Screenshots
 
@@ -291,6 +292,8 @@ All routes except `/health`, `/auth/*` and `/webhooks/*` require a session cooki
 | POST | `/notifications/:id/read` | Mark one as read |
 | DELETE | `/notifications` | Delete all notifications |
 | DELETE | `/notifications/:id` | Delete one notification |
+| GET | `/account` | Account summary for the Settings page |
+| DELETE | `/account` | Delete the account and all its data (the username must be typed to confirm) |
 
 ## Database schema
 
@@ -344,6 +347,7 @@ The production setup is **Vercel** (frontend), **Render** (backend) and **Neon**
 - [ ] Per-repository webhook secrets
 - [ ] Route-level and end-to-end tests
 - [ ] Server-Sent Events instead of polling
+- [ ] Download my data (export)
 
 ## Contributing
 

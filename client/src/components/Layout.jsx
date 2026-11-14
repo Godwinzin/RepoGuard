@@ -1,9 +1,10 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import Logo from "./Logo";
+import Footer from "./Footer";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import NavDrawer from "./NavDrawer";
-import { FolderIcon, PlusIcon } from "./icons";
+import { BookIcon, FolderIcon, PlusIcon } from "./icons";
 
 export default function Layout() {
   const { pathname } = useLocation();
@@ -14,10 +15,11 @@ export default function Layout() {
   const navItems = [
     { to: "/", label: "Repositories", icon: FolderIcon, active: !onAdd },
     { to: "/repos/add", label: "Add repository", icon: PlusIcon, active: onAdd },
+    { to: "/docs", label: "Docs", icon: BookIcon, active: false },
   ];
 
   return (
-    <>
+    <div className="app-shell">
       <header className="topbar">
         <div className="topbar-inner">
           <Link to="/" className="brand" aria-label="RepoGuard home">
@@ -30,6 +32,8 @@ export default function Layout() {
               <Link
                 key={to}
                 to={to}
+                title={label}
+                aria-label={label}
                 className={`nav-link ${active ? "nav-link-active" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
@@ -51,6 +55,8 @@ export default function Layout() {
       <main className="container">
         <Outlet />
       </main>
-    </>
+
+      <Footer />
+    </div>
   );
 }

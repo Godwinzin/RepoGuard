@@ -1,5 +1,6 @@
 import { query } from "../db/pool.js";
 import { decrypt } from "../utils/crypto.js";
+import { env } from "../config/env.js";
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -170,5 +171,32 @@ export function describeGitHubError(err) {
         code: "github_error",
         message: "GitHub isn't responding properly right now. Please try again in a few minutes.",
       };
+  }
+}
+// Revoke RepoGuard's authorization in the user's GitHub account. This also invalidates
+// every token we hold for them. Returns true if GitHub confirms (or says the token was
+// already invalid), false if we could not do it.
+export async function revokeGitHubAuthorization(token) {
+  const credentials = Buffer.from(
+    `${env.github.clientId}:${env.github.clientSecret}`
+  ).toString("base64");
+
+  try {
+    const res = await fetch(`https://api.github.com/applications/${env.github.clientId}/grant`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "RepoGuard",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: token }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+
+    // 204 means revoked. An invalid token returns 404, which means there is nothing left to revoke.
+    return res.status === 204 || res.status === 404;
+  } catch {
+    return false; // never log the token or the request
   }
 }

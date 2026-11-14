@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../api";
 import { AuthContext } from "./AuthContext";
 
@@ -57,8 +57,13 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  // Used after the account is deleted: the server has already ended the session
+  const forget = useCallback(() => setUser(null), []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, retry, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, error, retry, logout, forget }}
+    >
       {children}
     </AuthContext.Provider>
   );

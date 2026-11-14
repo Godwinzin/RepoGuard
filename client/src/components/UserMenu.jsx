@@ -1,8 +1,15 @@
 import { useCallback, useRef, useState } from "react";
 import { useAuth } from "../auth/useAuth";
+import { Link } from "react-router-dom";
 import { useToast } from "../toast/useToast";
 import { useDismiss } from "../useDismiss";
-import { ChevronDownIcon, ExternalIcon, LogOutIcon, UserIcon } from "./icons";
+import {
+  ChevronDownIcon,
+  ExternalIcon,
+  LogOutIcon,
+  UserIcon,
+  SettingsIcon,
+} from "./icons";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -62,6 +69,15 @@ export default function UserMenu() {
               <ExternalIcon size={14} />
             </span>
           </a>
+
+          <Link
+            to="/settings"
+            className="popover-item"
+            onClick={() => setOpen(false)}
+          >
+            <SettingsIcon size={16} />
+            <span>Settings</span>
+          </Link>
 
           <button
             type="button"

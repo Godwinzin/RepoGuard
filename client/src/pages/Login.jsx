@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import { usePageTitle } from "../usePageTitle";
+import GitHubLoginButton from "../components/GitHubLoginButton";
 import Logo from "../components/Logo";
 import { Alert, ErrorState } from "../components/ErrorState";
-import { usePageTitle } from "../usePageTitle";
 
 const FEATURES = [
   "Finds committed secrets, exposed .env files and vulnerable dependencies",
@@ -22,26 +22,7 @@ export default function Login() {
   // Hooks first, before any early return
   const { user, loading, error, retry } = useAuth();
   const [params] = useSearchParams();
-  const [redirecting, setRedirecting] = useState(false);
   usePageTitle("Log in");
-  
-  useEffect(() => {
-    // Pressing Back from GitHub can restore this page from the browser cache,
-    // with the button still stuck in its "redirecting" state
-    function onPageShow(event) {
-      if (event.persisted) setRedirecting(false);
-    }
-    window.addEventListener("pageshow", onPageShow);
-    return () => window.removeEventListener("pageshow", onPageShow);
-  }, []);
-
-  function handleClick(event) {
-    if (redirecting) {
-      event.preventDefault(); // ignore a second click
-      return;
-    }
-    setRedirecting(true);
-  }
 
   if (loading) {
     return (
@@ -94,17 +75,11 @@ export default function Login() {
 
         {loginError && <Alert>{loginError}</Alert>}
 
-        {/* Still a normal link: this leaves the React app and goes to the server */}
-        <a
-          className="btn btn-primary btn-lg btn-block"
-          href="/api/auth/github"
-          onClick={handleClick}
-          aria-disabled={redirecting}
-        >
-          {redirecting && <span className="btn-spinner" aria-hidden="true" />}
-          <span>{redirecting ? "Redirecting to GitHub…" : "Continue with GitHub"}</span>
-        </a>
-        <p className="fine-print">We only read public repositories.</p>
+        <GitHubLoginButton block />
+        <p className="fine-print">
+          We only read public repositories. <Link to="/privacy">Privacy</Link> ·{" "}
+          <Link to="/terms">Terms</Link>
+        </p>
       </div>
     </div>
   );

@@ -1,16 +1,24 @@
 import { useId, useState } from "react";
 import Button from "./Button";
 import SeverityBadge from "./SeverityBadge";
+import { Link } from "react-router-dom";
+import Inline from "./Inline";
 
 const MIN_REASON = 8;
 
-export default function FindingCard({ finding, canManage = false, onAccept, onRestore }) {
+export default function FindingCard({
+  finding,
+  canManage = false,
+  onAccept,
+  onRestore,
+}) {
   const [asking, setAsking] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const fieldId = useId();
 
-  const needsReason = finding.severity === "critical" || finding.severity === "high";
+  const needsReason =
+    finding.severity === "critical" || finding.severity === "high";
   const tooShort = needsReason && reason.trim().length < MIN_REASON;
 
   async function submit() {
@@ -37,7 +45,9 @@ export default function FindingCard({ finding, canManage = false, onAccept, onRe
       <summary>
         <SeverityBadge severity={finding.severity} />
         <span className="finding-title">{finding.title}</span>
-        {finding.change === "new" && !finding.accepted && <span className="tag-new">NEW</span>}
+        {finding.change === "new" && !finding.accepted && (
+          <span className="tag-new">NEW</span>
+        )}
       </summary>
 
       <div className="finding-body">
@@ -48,10 +58,22 @@ export default function FindingCard({ finding, canManage = false, onAccept, onRe
         )}
 
         <h4>Why it matters</h4>
-        <p>{finding.message}</p>
+        <p>
+          <Inline text={finding.message} />
+        </p>
 
         <h4>How to fix it</h4>
-        <p>{finding.fix}</p>
+        <p>
+          <Inline text={finding.fix} />
+        </p>
+
+        {finding.rule_id && (
+          <p className="finding-learn">
+            <Link to={`/docs#${finding.rule_id}`}>
+              Learn more about this check →
+            </Link>
+          </p>
+        )}
 
         {finding.accepted ? (
           <div className="accepted-note">
@@ -61,7 +83,12 @@ export default function FindingCard({ finding, canManage = false, onAccept, onRe
               <p>{finding.accepted_reason || "No reason given."}</p>
             </div>
             {canManage && (
-              <Button variant="secondary" size="sm" onClick={restore} loading={busy}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={restore}
+                loading={busy}
+              >
                 Restore
               </Button>
             )}
@@ -71,7 +98,8 @@ export default function FindingCard({ finding, canManage = false, onAccept, onRe
           (asking ? (
             <div className="accept-form">
               <label htmlFor={fieldId}>
-                Why is this acceptable? {needsReason ? "(required)" : "(optional)"}
+                Why is this acceptable?{" "}
+                {needsReason ? "(required)" : "(optional)"}
               </label>
               <textarea
                 id={fieldId}
@@ -84,17 +112,31 @@ export default function FindingCard({ finding, canManage = false, onAccept, onRe
               />
               <div className="accept-actions">
                 <span className="muted-small">{reason.length}/300</span>
-                <Button variant="ghost" size="sm" onClick={() => setAsking(false)} disabled={busy}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAsking(false)}
+                  disabled={busy}
+                >
                   Cancel
                 </Button>
-                <Button size="sm" onClick={submit} loading={busy} disabled={tooShort}>
+                <Button
+                  size="sm"
+                  onClick={submit}
+                  loading={busy}
+                  disabled={tooShort}
+                >
                   Accept risk
                 </Button>
               </div>
             </div>
           ) : (
             <div className="finding-actions">
-              <Button variant="secondary" size="sm" onClick={() => setAsking(true)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setAsking(true)}
+              >
                 Accept this risk
               </Button>
             </div>

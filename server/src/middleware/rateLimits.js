@@ -35,3 +35,11 @@ export const monitoringLimiter = makeLimiter({
   perUser: true,
   message: "You're changing monitoring too quickly. Please wait a few minutes.",
 });
+
+// Account deletion
+export const accountLimiter = makeLimiter({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  perUser: true,
+  message: "Too many attempts. Please wait a while and try again.",
+});
