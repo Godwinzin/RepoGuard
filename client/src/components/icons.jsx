@@ -174,3 +174,41 @@ export const TrashIcon = (props) => (
     <line x1="14" x2="14" y1="11" y2="17" />
   </Svg>
 );
+
+export const LayoutIcon = (props) => (
+  <Svg {...props}>
+    <rect width="7" height="9" x="3" y="3" rx="1" />
+    <rect width="7" height="5" x="14" y="3" rx="1" />
+    <rect width="7" height="9" x="14" y="12" rx="1" />
+    <rect width="7" height="5" x="3" y="16" rx="1" />
+  </Svg>
+);
+
+export const CheckCircleIcon = (props) => (
+  <Svg {...props}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <path d="m9 11 3 3L22 4" />
+  </Svg>
+);
+
+export const XCircleIcon = (props) => (
+  <Svg {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="m15 9-6 6" />
+    <path d="m9 9 6 6" />
+  </Svg>
+);
+
+export const SearchIcon = (props) => (
+  <Svg {...props}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </Svg>
+);
+
+export const EyeIcon = (props) => (
+  <Svg {...props}>
+    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+    <circle cx="12" cy="12" r="3" />
+  </Svg>
+);

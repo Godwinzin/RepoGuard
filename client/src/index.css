@@ -2070,28 +2070,6 @@ tbody tr:hover td {
   font-size: 0.82rem;
 }
 
-/* ---------- Switch between the desktop menu and the drawer ---------- */
-@media (max-width: 720px) {
-  .nav-desktop {
-    display: none;
-  }
-
-  .burger {
-    display: flex;
-  }
-
-  .topbar-inner {
-    gap: 8px;
-    padding: 8px 12px;
-  }
-}
-
-@media (min-width: 721px) {
-  .drawer,
-  .drawer-backdrop {
-    display: none;
-  }
-}
 /* =========================================================
    Phones: turn each table row into a small card
    ========================================================= */
@@ -2925,4 +2903,722 @@ td.wrap {
   background: var(--warning-soft);
   border-radius: 10px;
   color: var(--warning);
+}
+
+/* =========================================================
+   App shell: dark sidebar, top bar, search
+   ========================================================= */
+:root {
+  --sidebar-bg: #0b1324;
+  --sidebar-text: #a9b6d3;
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active: rgba(59, 130, 246, 0.18);
+  --sidebar-border: rgba(255, 255, 255, 0.09);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sidebar-bg: #070c19;
+  }
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.shell-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.shell-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 28px 56px;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0; /* top, right, bottom, left */
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 248px;
+  padding: 20px 14px;
+  overflow-y: auto;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
+
+.sidebar-brand {
+  display: inline-flex;
+  padding: 4px 10px 20px;
+}
+
+/* The logo text is dark by default, so it needs light colours on the dark sidebar */
+.sidebar .logo-text {
+  color: #fff;
+}
+
+.sidebar .logo-text span {
+  color: #7db2ff;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.side-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--sidebar-text);
+  font-size: 0.94rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.side-link:hover {
+  background: var(--sidebar-hover);
+  color: #fff;
+}
+
+.side-link:focus-visible {
+  outline: 2px solid #7db2ff;
+  outline-offset: 2px;
+}
+
+.side-link-active,
+.side-link-active:hover {
+  background: var(--sidebar-active);
+  color: #fff;
+}
+
+/* A small marker on the sidebar's edge for the current page */
+.side-link-active::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: -14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #7db2ff;
+}
+
+.side-card {
+  margin-top: auto; /* pushes the card to the bottom of the sidebar */
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 14px;
+}
+
+.side-card-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--sidebar-active);
+  color: #9cc4ff;
+}
+
+.side-card strong {
+  display: block;
+  margin: 10px 0 4px;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.side-card p {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.side-card-link {
+  color: #9cc4ff;
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.side-card-link:hover {
+  text-decoration: underline;
+}
+
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 28px;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-mobile {
+  display: none; /* the sidebar shows the logo on wide screens */
+}
+
+.search-global {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+}
+
+.search-global:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+.search-global input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+@media (min-width: 961px) {
+  .shell-main {
+    margin-left: 248px;
+  }
+
+  /* On wide screens the sidebar is the navigation, so the phone drawer is never shown */
+  .drawer,
+  .drawer-backdrop {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .sidebar {
+    display: none;
+  }
+
+  .brand-mobile {
+    display: inline-flex;
+  }
+
+  .search-global {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .app-topbar {
+    padding: 10px 14px;
+  }
+
+  .shell-content {
+    padding: 20px 14px 48px;
+  }
+}
+
+/* =========================================================
+   Overview: stats with change, trend chart, activity, table
+   ========================================================= */
+.overview-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.overview-head h1 {
+  font-size: 1.9rem;
+}
+
+.stat-body {
+  min-width: 0;
+}
+
+.stat-label {
+  margin-bottom: 2px;
+}
+
+.stat-delta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.stat-delta-good {
+  color: var(--success);
+}
+
+.stat-delta-bad {
+  color: var(--danger);
+}
+
+.stat-delta-neutral {
+  color: var(--muted);
+}
+
+.stat-delta-note {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.panel-pad {
+  padding: 20px 22px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panel-link {
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.panel-link:hover {
+  text-decoration: underline;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.select {
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+/* ---------- Trend chart ---------- */
+.chart {
+  position: relative;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y; /* a finger can still scroll the page vertically */
+}
+
+.chart-grid {
+  stroke: var(--border);
+  stroke-dasharray: 3 4;
+}
+
+.chart-axis {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.chart-stop-top {
+  stop-color: var(--primary);
+  stop-opacity: 0.28;
+}
+
+.chart-stop-bottom {
+  stop-color: var(--primary);
+  stop-opacity: 0;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-cursor {
+  stroke: var(--primary);
+  stroke-opacity: 0.35;
+}
+
+.chart-dot {
+  fill: var(--surface);
+  stroke: var(--primary);
+  stroke-width: 2.5;
+}
+
+/* The tooltip colours are swapped from the page: dark on light, light on dark */
+.chart-tip {
+  position: absolute;
+  padding: 6px 10px;
+  background: var(--text);
+  border-radius: 8px;
+  color: var(--bg);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 12px));
+}
+
+.chart-tip-end {
+  transform: translate(-85%, calc(-100% - 12px));
+}
+
+.chart-tip small {
+  display: block;
+  opacity: 0.75;
+  font-size: 0.74rem;
+}
+
+.chart-empty {
+  padding: 56px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+/* ---------- Activity feed ---------- */
+.feed {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  color: inherit;
+  text-decoration: none;
+}
+
+.feed li:first-child .feed-item {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.feed-item:hover .feed-title {
+  color: var(--primary-text);
+}
+
+.feed-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.feed-icon-good {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.feed-icon-warn {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.feed-icon-bad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.feed-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.feed-title {
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.feed-sub {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-tail {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.feed-tail-good {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.feed-tail-warn {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.feed-tail-bad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* ---------- Repositories table ---------- */
+.table-panel {
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.table-panel > .panel-head {
+  margin: 0;
+  padding: 18px 22px;
+}
+
+/* Inside a panel the table sits flush, without its own frame */
+.table-panel .table-wrap {
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.repo-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.repo-cell:hover .repo-cell-name {
+  color: var(--primary-text);
+  text-decoration: underline;
+}
+
+.repo-cell-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.repo-cell-name {
+  display: flex;
+  align-items: center;
+  font-weight: 650;
+}
+
+.mini-dot {
+  width: 8px;
+  height: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.muted-cell {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.actions-cell {
+  text-align: right;
+}
+
+.health {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 170px;
+}
+
+.health-value {
+  min-width: 58px;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.health-value small {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.health-track {
+  flex: 1;
+  min-width: 60px;
+  height: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.health-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.health-good {
+  background: var(--ring-good);
+}
+
+.health-ok {
+  background: var(--ring-ok);
+}
+
+.health-bad {
+  background: var(--ring-bad);
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.status-chip-healthy {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status-chip-attention {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.status-chip-risk {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-chip-none {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+/* ---------- Repositories page filters ---------- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-chip:hover {
+  background: var(--surface-2);
+}
+
+.filter-chip-active,
+.filter-chip-active:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.filter-count {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* ---------- Smaller screens ---------- */
+@media (max-width: 1080px) {
+  .overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .overview-head {
+    align-items: center;
+  }
+
+  .overview-head h1 {
+    font-size: 1.45rem;
+  }
+
+  .panel-pad {
+    padding: 16px;
+  }
+
+  .table-panel > .panel-head {
+    padding: 16px;
+  }
+
+  .table-stack .actions-cell {
+    text-align: left;
+  }
+
+  .health {
+    min-width: 0;
+  }
 }

@@ -1,79 +1,116 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useApi } from "../useApi";
-import ScoreRing from "../components/ScoreRing";
-import Stat from "../components/Stat";
-import RepoAvatar from "../components/RepoAvatar";
-import { ErrorState } from "../components/ErrorState";
-import { RepoCardSkeleton, Skeleton, StatSkeleton } from "../components/Skeleton";
-import { AlertIcon, ArrowRightIcon, ClockIcon, FolderIcon, GaugeIcon, ShieldIcon } from "../components/icons";
-import { splitName, timeAgo } from "../format";
+import { useAuth } from "../auth/useAuth";
 import { usePageTitle } from "../usePageTitle";
+import Stat from "../components/Stat";
+import TrendChart from "../components/TrendChart";
+import ActivityFeed from "../components/ActivityFeed";
+import RepoTable from "../components/RepoTable";
+import { ErrorState } from "../components/ErrorState";
+import { Skeleton, StatSkeleton } from "../components/Skeleton";
+import { AlertIcon, EyeIcon, FolderIcon, GaugeIcon, ShieldIcon } from "../components/icons";
+import { greeting, statusOf } from "../format";
 
 function scoreTone(score) {
   if (score === null) return "neutral";
   return score >= 80 ? "good" : score >= 50 ? "warn" : "bad";
 }
 
+// Change between the first and last day that had audit data
+function trendChange(points, key) {
+  const valid = points.filter((p) => p.audited > 0 && p[key] !== null);
+  if (valid.length < 2) return null;
+  return valid[valid.length - 1][key] - valid[0][key];
+}
+
+function makeDelta(change, { goodWhen, unit = "", note }) {
+  if (change === null) return null;
+  if (change === 0) return { arrow: "→", text: "No change", tone: "neutral", note };
+
+  const up = change > 0;
+  const good = goodWhen === "up" ? up : !up;
+  return {
+    arrow: up ? "↑" : "↓",
+    text: `${up ? "+" : ""}${change}${unit}`,
+    tone: good ? "good" : "bad",
+    note,
+  };
+}
+
+function DashboardSkeleton() {
+  return (
+    <>
+      <div className="overview-head">
+        <div className="stack">
+          <Skeleton width={320} height={34} />
+          <Skeleton width={260} height={14} />
+        </div>
+      </div>
+      <div className="stats">
+        {[1, 2, 3, 4].map((n) => (
+          <StatSkeleton key={n} />
+        ))}
+      </div>
+      <div className="overview-grid">
+        <Skeleton height={330} radius="14px" />
+        <Skeleton height={330} radius="14px" />
+      </div>
+      <Skeleton height={260} radius="14px" />
+    </>
+  );
+}
+
 export default function Dashboard() {
-  const { data: repos, error, loading, reload } = useApi("/repos");
-   usePageTitle("Repositories");
+  const { user } = useAuth();
+  const repos = useApi("/repos");
+  const [days, setDays] = useState(30);
+  const trend = useApi(`/stats/trend?days=${days}`);
+  const activity = useApi("/activity?limit=6");
+  const [hello] = useState(() => greeting()); // chosen once, when the page opens
+  usePageTitle("Overview");
 
-  if (loading) {
-    return (
-      <>
-        <div className="page-header">
-          <div className="stack">
-            <Skeleton width={200} height={30} />
-            <Skeleton width={280} height={14} />
-          </div>
-        </div>
-        <div className="stats">
-          {[1, 2, 3, 4].map((n) => (
-            <StatSkeleton key={n} />
-          ))}
-        </div>
-        <div className="grid">
-          {[1, 2, 3].map((n) => (
-            <RepoCardSkeleton key={n} />
-          ))}
-        </div>
-      </>
-    );
-  }
+  if (repos.loading) return <DashboardSkeleton />;
+  if (repos.error) return <ErrorState error={repos.error} onRetry={repos.reload} showHome={false} />;
 
-  if (error) return <ErrorState error={error} onRetry={reload} showHome={false} />;
-
-  const audited = repos.filter((r) => r.latest_score !== null);
+  const list = repos.data;
+  const audited = list.filter((r) => r.latest_score !== null);
   const average = audited.length
     ? Math.round(audited.reduce((sum, r) => sum + r.latest_score, 0) / audited.length)
     : null;
-  const totalProblems = repos.reduce((sum, r) => sum + (r.finding_count ?? 0), 0);
-  const totalCritical = repos.reduce((sum, r) => sum + (r.critical_count ?? 0), 0);
-  const needAttention = repos.filter(
-    (r) => r.critical_count > 0 || (r.latest_score !== null && r.latest_score < 50)
-  ).length;
+  const totalProblems = list.reduce((sum, r) => sum + (r.finding_count ?? 0), 0);
+  const totalCritical = list.reduce((sum, r) => sum + (r.critical_count ?? 0), 0);
+  const monitored = list.filter((r) => r.monitoring_enabled).length;
+  const needAttention = list.filter((r) => ["attention", "risk"].includes(statusOf(r).key)).length;
+
+  const points = trend.data?.points ?? [];
+  const since = points[0]?.day;
+  const note = `vs ${days} days ago`;
+  const added = since ? list.filter((r) => r.created_at.slice(0, 10) >= since).length : 0;
+
+  const firstName = (user.name || user.login).split(" ")[0];
 
   let summary = "Run an audit to see how your repositories are doing.";
   if (audited.length > 0) {
     summary =
       needAttention > 0
-        ? `${needAttention} ${needAttention === 1 ? "repository needs" : "repositories need"} attention.`
-        : "Everything looks healthy.";
+        ? `${needAttention} ${needAttention === 1 ? "repository needs" : "repositories need"} attention${
+            totalCritical > 0 ? `, with ${totalCritical} critical ${totalCritical === 1 ? "issue" : "issues"}` : ""
+          }.`
+        : "Everything looks healthy. Here's the health of your repositories.";
   }
 
-  return (
-    <>
-      <div className="page-header page-header-row">
-        <div>
-          <h1>Repositories</h1>
-          <p className="subtitle">{summary}</p>
+  if (list.length === 0) {
+    return (
+      <>
+        <div className="overview-head">
+          <div>
+            <h1>
+              {hello}, {firstName}
+            </h1>
+            <p className="subtitle">Let's get your first repository audited.</p>
+          </div>
         </div>
-        <Link to="/repos/add" className="btn btn-primary btn-md">
-          Add repository
-        </Link>
-      </div>
-
-      {repos.length === 0 ? (
         <div className="state-box">
           <div className="state-icon">
             <ShieldIcon size={28} />
@@ -86,85 +123,110 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-      ) : (
-        <>
-          <div className="stats">
-            <Stat icon={<FolderIcon />} tone="blue" value={repos.length} label="Repositories" />
-            <Stat
-              icon={<GaugeIcon />}
-              tone={scoreTone(average)}
-              value={average ?? "—"}
-              label="Average score"
-            />
-            <Stat
-              icon={<AlertIcon />}
-              tone={audited.length === 0 ? "neutral" : totalProblems > 0 ? "warn" : "good"}
-              value={audited.length === 0 ? "—" : totalProblems}
-              label="Open problems"
-            />
-            <Stat
-              icon={<AlertIcon />}
-              tone={audited.length === 0 ? "neutral" : totalCritical > 0 ? "bad" : "good"}
-              value={audited.length === 0 ? "—" : totalCritical}
-              label="Critical issues"
-            />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="overview-head">
+        <div>
+          <h1>
+            {hello}, {firstName}
+          </h1>
+          <p className="subtitle">{summary}</p>
+        </div>
+        <Link to="/repos/add" className="btn btn-primary btn-md">
+          Add repository
+        </Link>
+      </div>
+
+      <div className="stats">
+        <Stat
+          icon={<FolderIcon />}
+          tone="blue"
+          label="Repositories"
+          value={list.length}
+          delta={added > 0 ? { arrow: "↑", text: `+${added}`, tone: "neutral", note: `in ${days} days` } : null}
+        />
+        <Stat
+          icon={<GaugeIcon />}
+          tone={scoreTone(average)}
+          label="Average health"
+          value={
+            average === null ? (
+              "—"
+            ) : (
+              <>
+                {average}
+                <small>/100</small>
+              </>
+            )
+          }
+          delta={makeDelta(trendChange(points, "avg_score"), { goodWhen: "up", unit: " pts", note })}
+        />
+        <Stat
+          icon={<AlertIcon />}
+          tone={audited.length === 0 ? "neutral" : totalProblems > 0 ? "warn" : "good"}
+          label="Open problems"
+          value={audited.length === 0 ? "—" : totalProblems}
+          delta={makeDelta(trendChange(points, "problems"), { goodWhen: "down", note })}
+        />
+        <Stat
+          icon={<EyeIcon />}
+          tone={monitored > 0 ? "good" : "neutral"}
+          label="Monitoring"
+          value={`${monitored} active`}
+        />
+      </div>
+
+      <div className="overview-grid">
+        <section className="panel panel-pad">
+          <div className="panel-head">
+            <h2>Health trend</h2>
+            <select
+              className="select"
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              aria-label="Time range"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
           </div>
+          {trend.loading ? (
+            <Skeleton height={260} radius="10px" />
+          ) : trend.error ? (
+            <p className="muted-small">{trend.error.message}</p>
+          ) : (
+            <TrendChart points={points} />
+          )}
+        </section>
 
-          <div className="grid">
-            {repos.map((repo) => {
-              const { owner, name } = splitName(repo.full_name);
-              const hasScore = repo.latest_score !== null;
-
-              return (
-                <Link key={repo.id} to={`/repos/${repo.id}`} className="repo-card">
-                  <div className="repo-card-head">
-                    <RepoAvatar name={name} />
-                    <div className="repo-card-name">
-                      <span className="repo-title">{name}</span>
-                      <span className="repo-owner">{owner}</span>
-                    </div>
-                    <span className="repo-card-arrow">
-                      <ArrowRightIcon size={18} />
-                    </span>
-                  </div>
-
-                  <div className="repo-card-body">
-                    <ScoreRing score={repo.latest_score} size={52} />
-                    <div className="repo-card-summary">
-                      {hasScore ? (
-                        <>
-                          <span className="repo-card-count">
-                            {repo.finding_count}{" "}
-                            <small>{repo.finding_count === 1 ? "problem" : "problems"}</small>
-                          </span>
-                          {repo.critical_count > 0 ? (
-                            <span className="pill pill-danger">{repo.critical_count} critical</span>
-                          ) : (
-                            <span className="pill pill-success">No critical issues</span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="muted-small">Run an audit to get a score.</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="repo-card-foot">
-                    <span className={`chip ${repo.monitoring_enabled ? "chip-on" : ""}`}>
-                      <span className="dot" />
-                      {repo.monitoring_enabled ? "Monitoring on" : "Monitoring off"}
-                    </span>
-                    <span className="muted-small time">
-                      <ClockIcon size={13} />
-                      {repo.last_audited_at ? timeAgo(repo.last_audited_at) : "Never audited"}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
+        <section className="panel panel-pad">
+          <div className="panel-head">
+            <h2>Recent activity</h2>
           </div>
-        </>
-      )}
+          {activity.loading ? (
+            <Skeleton height={260} radius="10px" />
+          ) : activity.error ? (
+            <p className="muted-small">{activity.error.message}</p>
+          ) : (
+            <ActivityFeed items={activity.data} />
+          )}
+        </section>
+      </div>
+
+      <section className="panel table-panel">
+        <div className="panel-head">
+          <h2>Your repositories</h2>
+          <Link to="/repositories" className="panel-link">
+            View all →
+          </Link>
+        </div>
+        <RepoTable repos={list.slice(0, 5)} />
+      </section>
     </>
   );
 }

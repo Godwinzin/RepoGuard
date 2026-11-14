@@ -27,3 +27,19 @@ export function splitName(fullName) {
   const [owner, name] = fullName.split("/");
   return { owner, name };
 }
+
+export function greeting(date = new Date()) {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+// One label per repository, used by the table, chips and filters
+export function statusOf(repo) {
+  const score = repo.latest_score;
+  if (score === null || score === undefined) return { key: "none", label: "Not audited" };
+  if (score < 50) return { key: "risk", label: "At risk" };
+  if (repo.critical_count > 0 || score < 80) return { key: "attention", label: "Needs attention" };
+  return { key: "healthy", label: "Healthy" };
+}

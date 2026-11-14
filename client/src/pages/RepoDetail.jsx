@@ -101,7 +101,7 @@ export default function RepoDetail() {
 
   return (
     <>
-      <Link to="/" className="back-link">
+      <Link to="/repositories" className="back-link">
         ← All repositories
       </Link>
 

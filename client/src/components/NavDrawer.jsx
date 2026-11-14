@@ -25,7 +25,7 @@ export default function NavDrawer({ items }) {
     }
 
     // If the window becomes wide (a rotated phone, say), the desktop menu takes over
-    const wide = window.matchMedia("(min-width: 721px)");
+        const wide = window.matchMedia("(min-width: 961px)");
     function onBreakpoint(event) {
       if (event.matches) setOpen(false);
     }

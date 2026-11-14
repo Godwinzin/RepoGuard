@@ -16,6 +16,7 @@ import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Goodbye from "./pages/Goodbye";
+import Repositories from "./pages/Repositories";
 
 export default function App() {
   return (
@@ -40,7 +41,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<Dashboard />} />
-                {/* "add" is a fixed word, so it wins over the :id pattern below */}
+                <Route path="repositories" element={<Repositories />} />
                 <Route path="repos/add" element={<AddRepos />} />
                 <Route path="repos/:id" element={<RepoDetail />} />
                 <Route path="audits/:auditId" element={<Report />} />
