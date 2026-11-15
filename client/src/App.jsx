@@ -30,10 +30,10 @@ export default function App() {
             {/* Public pages: readable without logging in */}
             <Route element={<PublicLayout wide />}>
               <Route path="docs" element={<Docs />} />
-            </Route>
-            <Route element={<PublicLayout />}>
               <Route path="privacy" element={<Privacy />} />
               <Route path="terms" element={<Terms />} />
+            </Route>
+            <Route element={<PublicLayout />}>
               <Route path="goodbye" element={<Goodbye />} />
             </Route>
 

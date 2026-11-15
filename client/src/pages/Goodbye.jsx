@@ -21,7 +21,7 @@ export default function Goodbye() {
     : [];
 
   return (
-    <div className="state-box goodbye">
+    <div className="state-box">
       <div className="state-icon">
         <ShieldIcon size={28} />
       </div>

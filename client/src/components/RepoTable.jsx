@@ -27,7 +27,7 @@ export default function RepoTable({ repos }) {
 
   return (
     <div className="table-wrap">
-      <table className="table-stack repo-table">
+      <table className="table-stack">
         <thead>
           <tr>
             <th>Repository</th>

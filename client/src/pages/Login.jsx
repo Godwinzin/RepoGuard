@@ -2,13 +2,15 @@ import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { usePageTitle } from "../usePageTitle";
 import GitHubLoginButton from "../components/GitHubLoginButton";
+import ProductArt from "../components/ProductArt";
 import Logo from "../components/Logo";
 import { Alert, ErrorState } from "../components/ErrorState";
+import { CheckCircleIcon } from "../components/icons";
 
-const FEATURES = [
-  "Finds committed secrets, exposed .env files and vulnerable dependencies",
-  "Checks your README, tests, lockfile and project structure",
-  "Watches every push and tells you when new problems appear",
+const POINTS = [
+  "Finds committed secrets and exposed .env files",
+  "Flags vulnerable and outdated dependencies",
+  "Re-audits on every push and tells you what's new",
 ];
 
 // Only these messages can ever appear. We never print text taken from the URL.
@@ -45,42 +47,43 @@ export default function Login() {
   const loginError = LOGIN_ERRORS[params.get("error")]; // undefined for anything unknown
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <Logo size={40} />
-        <h1>Know what's wrong with your repo before anyone else does.</h1>
-        <p className="subtitle">
-          Connect GitHub and get an instant health report for your projects, with a clear
-          explanation of every problem and how to fix it.
-        </p>
+    <div className="login-split">
+      <section className="login-art">
+        <div className="login-art-copy">
+          <h2>Catch the problems hiding in your repositories.</h2>
+          <p>
+            Secrets, vulnerable packages and missing basics, explained in plain English with the
+            exact fix.
+          </p>
+        </div>
+        <ProductArt />
+      </section>
 
-        <ul className="feature-list">
-          {FEATURES.map((text) => (
-            <li key={text}>
-              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
-                <circle cx="10" cy="10" r="10" className="feature-dot" />
-                <path
-                  d="m5.8 10.4 2.7 2.7 5.2-5.6"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>{text}</span>
-            </li>
-          ))}
-        </ul>
+      <section className="login-panel">
+        <div className="login-form">
+          <Logo size={34} />
+          <h1>Welcome to RepoGuard</h1>
+          <p className="subtitle">Sign in with GitHub to audit your repositories.</p>
 
-        {loginError && <Alert>{loginError}</Alert>}
+          {loginError && <Alert>{loginError}</Alert>}
 
-        <GitHubLoginButton block />
-        <p className="fine-print">
-          We only read public repositories. <Link to="/privacy">Privacy</Link> ·{" "}
-          <Link to="/terms">Terms</Link>
-        </p>
-      </div>
+          <GitHubLoginButton block />
+
+          <ul className="login-points">
+            {POINTS.map((text) => (
+              <li key={text}>
+                <CheckCircleIcon size={18} />
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
+
+          <p className="fine-print">
+            We only read public repositories. <Link to="/privacy">Privacy</Link> ·{" "}
+            <Link to="/terms">Terms</Link>
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

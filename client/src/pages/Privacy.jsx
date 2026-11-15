@@ -1,21 +1,28 @@
 import { usePageTitle } from "../usePageTitle";
 import { SITE } from "../site";
+import LegalLayout from "../components/LegalLayout";
+
+const TOC = [
+  { id: "what-we-store", label: "What we store" },
+  { id: "cookies-and-logs", label: "Cookies and logs" },
+  { id: "who-else-sees-data", label: "Who else sees data" },
+  { id: "security", label: "Security" },
+  { id: "keeping-and-removing", label: "Keeping and removing data" },
+  { id: "changes", label: "Changes and questions" },
+];
 
 export default function Privacy() {
   usePageTitle("Privacy Policy");
 
   return (
-    <article className="prose">
-      <h1>Privacy Policy</h1>
-      <p className="muted-small">Last updated {SITE.legalUpdated}</p>
-
+    <LegalLayout title="Privacy Policy" updated={SITE.legalUpdated} toc={TOC}>
       <p>
         {SITE.name} audits public GitHub repositories. This page explains, in
         plain language, what it stores, who else sees data, and how to remove
         it.
       </p>
 
-      <h2>What we store</h2>
+      <h2 id="what-we-store">What we store</h2>
       <ul>
         <li>
           <strong>From your GitHub account:</strong> your GitHub user ID,
@@ -51,7 +58,7 @@ export default function Privacy() {
         </li>
       </ul>
 
-      <h2>Cookies and logs</h2>
+      <h2 id="cookies-and-logs">Cookies and logs</h2>
       <ul>
         <li>
           One cookie, <code>repoguard.sid</code>, keeps you logged in for up to
@@ -67,7 +74,7 @@ export default function Privacy() {
         </li>
       </ul>
 
-      <h2>Who else sees data</h2>
+      <h2 id="who-else-sees-data">Who else sees data</h2>
       <ul>
         <li>
           <strong>GitHub</strong> handles your login, and we read file lists and
@@ -93,7 +100,7 @@ export default function Privacy() {
       </ul>
       <p>We do not sell data and we do not show ads.</p>
 
-      <h2>Security</h2>
+      <h2 id="security">Security</h2>
       <p>
         Tokens are encrypted at rest. Connections use HTTPS, sessions are stored
         on the server, and the session cookie cannot be read by page scripts.
@@ -102,7 +109,9 @@ export default function Privacy() {
         with.
       </p>
 
-      <h2>How long we keep data, and how to remove it</h2>
+      <h2 id="keeping-and-removing">
+        How long we keep data, and how to remove it
+      </h2>
       <ul>
         <li>
           <strong>Delete your account yourself:</strong> open Settings from your
@@ -132,12 +141,12 @@ export default function Privacy() {
         </li>
       </ul>
 
-      <h2>Changes and questions</h2>
+      <h2 id="changes">Changes and questions</h2>
       <p>
         If we change what we collect or share, we will update this page and its
         date. For questions or requests, email{" "}
         <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
       </p>
-    </article>
+    </LegalLayout>
   );
 }

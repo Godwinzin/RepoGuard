@@ -20,31 +20,6 @@ export function StatSkeleton() {
   );
 }
 
-export function RepoCardSkeleton() {
-  return (
-    <div className="repo-card repo-card-skeleton">
-      <div className="repo-card-head">
-        <Skeleton width={40} height={40} radius="12px" />
-        <div className="stack" style={{ flex: 1 }}>
-          <Skeleton width="55%" height={16} />
-          <Skeleton width="30%" height={12} />
-        </div>
-      </div>
-      <div className="repo-card-body">
-        <Skeleton width={64} height={64} radius="50%" />
-        <div className="stack" style={{ flex: 1 }}>
-          <Skeleton width="40%" height={20} />
-          <Skeleton width="60%" height={22} radius="999px" />
-        </div>
-      </div>
-      <div className="repo-card-foot">
-        <Skeleton width={110} height={22} radius="999px" />
-        <Skeleton width={90} height={12} />
-      </div>
-    </div>
-  );
-}
-
 export function RowSkeleton() {
   return (
     <li className="list-item">

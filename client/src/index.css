@@ -2781,7 +2781,26 @@ td.wrap {
    Settings and account deletion
    ========================================================= */
 .settings {
-  max-width: 760px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* The title and the danger zone take the full width. Account and Your data sit side by side. */
+.settings > .page-header,
+.settings > .danger-zone {
+  grid-column: 1 / -1;
+}
+
+.settings > .panel {
+  margin-bottom: 0;
+}
+
+@media (max-width: 860px) {
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .settings .panel {
@@ -2906,22 +2925,8 @@ td.wrap {
 }
 
 /* =========================================================
-   App shell: dark sidebar, top bar, search
+   App shell: sidebar and top bar
    ========================================================= */
-:root {
-  --sidebar-bg: #0b1324;
-  --sidebar-text: #a9b6d3;
-  --sidebar-hover: rgba(255, 255, 255, 0.06);
-  --sidebar-active: rgba(59, 130, 246, 0.18);
-  --sidebar-border: rgba(255, 255, 255, 0.09);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --sidebar-bg: #070c19;
-  }
-}
-
 .shell {
   min-height: 100vh;
 }
@@ -2941,6 +2946,7 @@ td.wrap {
   padding: 28px 28px 56px;
 }
 
+/* The sidebar uses the app's own surface colours, so it matches in light and dark mode */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0; /* top, right, bottom, left */
@@ -2951,22 +2957,13 @@ td.wrap {
   width: 248px;
   padding: 20px 14px;
   overflow-y: auto;
-  background: var(--sidebar-bg);
-  color: var(--sidebar-text);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
 }
 
 .sidebar-brand {
   display: inline-flex;
   padding: 4px 10px 20px;
-}
-
-/* The logo text is dark by default, so it needs light colours on the dark sidebar */
-.sidebar .logo-text {
-  color: #fff;
-}
-
-.sidebar .logo-text span {
-  color: #7db2ff;
 }
 
 .side-nav {
@@ -2982,7 +2979,7 @@ td.wrap {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: var(--sidebar-text);
+  color: var(--muted);
   font-size: 0.94rem;
   font-weight: 600;
   text-decoration: none;
@@ -2992,19 +2989,19 @@ td.wrap {
 }
 
 .side-link:hover {
-  background: var(--sidebar-hover);
-  color: #fff;
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .side-link:focus-visible {
-  outline: 2px solid #7db2ff;
+  outline: 3px solid color-mix(in srgb, var(--primary) 40%, transparent);
   outline-offset: 2px;
 }
 
 .side-link-active,
 .side-link-active:hover {
-  background: var(--sidebar-active);
-  color: #fff;
+  background: var(--primary-soft);
+  color: var(--primary-text);
 }
 
 /* A small marker on the sidebar's edge for the current page */
@@ -3016,14 +3013,13 @@ td.wrap {
   left: -14px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: #7db2ff;
+  background: var(--primary);
 }
 
 .side-card {
   margin-top: auto; /* pushes the card to the bottom of the sidebar */
   padding: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--sidebar-border);
+  background: var(--surface-2);
   border-radius: 14px;
 }
 
@@ -3033,25 +3029,25 @@ td.wrap {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: var(--sidebar-active);
-  color: #9cc4ff;
+  background: var(--primary-soft);
+  color: var(--primary-text);
 }
 
 .side-card strong {
   display: block;
   margin: 10px 0 4px;
-  color: #fff;
   font-size: 0.92rem;
 }
 
 .side-card p {
   margin: 0 0 10px;
+  color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.45;
 }
 
 .side-card-link {
-  color: #9cc4ff;
+  color: var(--primary-text);
   font-size: 0.84rem;
   font-weight: 650;
   text-decoration: none;
@@ -3067,7 +3063,8 @@ td.wrap {
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  min-height: 64px;
   padding: 12px 28px;
   background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(10px);
@@ -3078,34 +3075,26 @@ td.wrap {
   display: none; /* the sidebar shows the logo on wide screens */
 }
 
-.search-global {
+.crumbs {
   display: flex;
-  flex: 1;
   align-items: center;
-  gap: 10px;
-  max-width: 520px;
-  padding: 0 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.crumbs a {
+  display: inline-flex;
   color: var(--muted);
 }
 
-.search-global:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+.crumbs a:hover {
+  color: var(--text);
 }
 
-.search-global input {
-  flex: 1;
-  min-width: 0;
-  padding: 10px 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
+.crumbs strong {
   color: var(--text);
-  font: inherit;
-  font-size: 0.92rem;
+  font-weight: 650;
 }
 
 @media (min-width: 961px) {
@@ -3129,7 +3118,7 @@ td.wrap {
     display: inline-flex;
   }
 
-  .search-global {
+  .crumbs {
     display: none;
   }
 
@@ -3621,4 +3610,489 @@ td.wrap {
   .health {
     min-width: 0;
   }
+}
+/* =========================================================
+   The phone drawer opens from the left, next to the hamburger
+   ========================================================= */
+.drawer {
+  right: auto;
+  left: 0;
+  border-left: 0;
+  border-right: 1px solid var(--border);
+  transform: translateX(-100%);
+}
+
+.drawer-open {
+  transform: none;
+}
+
+/* The links now slide in from the left (this replaces the earlier animation of the same name) */
+@keyframes link-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
+/* With the button on the left edge, the bars line up on the left too */
+.burger {
+  align-items: flex-start;
+}
+/* =========================================================
+   Login: split screen with a product illustration
+   ========================================================= */
+.login-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  min-height: 100vh;
+}
+
+.login-art {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+  padding: 48px;
+  overflow: hidden;
+  background-color: var(--primary-soft);
+  /* A faint dot grid, drawn with a gradient used as a repeating pattern */
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--primary) 22%, transparent) 1.3px,
+    transparent 1.3px
+  );
+  background-size: 24px 24px;
+}
+
+.login-art-copy {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.login-art-copy h2 {
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.login-art-copy p {
+  margin-top: 12px;
+  color: var(--text-2);
+}
+
+.login-panel {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: var(--surface);
+}
+
+.login-form {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-form h1 {
+  margin: 26px 0 6px;
+  font-size: 1.7rem;
+}
+
+.login-form .subtitle {
+  margin-bottom: 24px;
+}
+
+.login-points {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  color: var(--text-2);
+  font-size: 0.92rem;
+  list-style: none;
+}
+
+.login-points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-points svg {
+  flex-shrink: 0;
+  color: var(--ring-good);
+}
+
+/* ---------- The illustration: floating cards ---------- */
+.art {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  height: 430px;
+  margin: 0 auto;
+}
+
+.art-card {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.art-report {
+  top: 0;
+  left: 0;
+  width: 290px;
+  padding: 16px;
+  transform: rotate(-2deg);
+}
+
+.art-report-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.art-report-head strong {
+  display: block;
+  font-size: 0.92rem;
+}
+
+.art-report-head span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.art-report-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.art-stats {
+  margin: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  list-style: none;
+}
+
+.art-stats li {
+  margin: 3px 0;
+}
+
+.art-stats b {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.art-finding {
+  top: 120px;
+  right: 0;
+  width: 300px;
+  padding: 14px 16px;
+  border-left: 4px solid var(--danger);
+  transform: rotate(1.5deg);
+}
+
+.art-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}
+
+.art-finding code {
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.art-finding p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.art-code {
+  bottom: 0;
+  left: 28px;
+  width: 300px;
+  padding: 12px 14px 14px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  transform: rotate(-1deg);
+}
+
+.art-code-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.art-code-bar span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.art-lines {
+  font-size: 0.8rem;
+  line-height: 1.9;
+}
+
+.art-lines > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 6px;
+  border-radius: 6px;
+}
+
+.art-dim {
+  width: 10px;
+  color: var(--muted);
+}
+
+.art-hit {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.art-redact {
+  display: inline-block;
+  width: 86px;
+  height: 8px;
+  margin-left: 4px;
+  border-radius: 4px;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+.art-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 3px 10px;
+  background: var(--danger-soft);
+  border-radius: 999px;
+  color: var(--danger);
+  font-family: "Inter Variable", system-ui, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.art-pill {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.art-pill-good {
+  top: 22px;
+  right: 8px;
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.art-pill-blue {
+  right: 24px;
+  bottom: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--primary-text);
+}
+
+@media (max-width: 920px) {
+  .login-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* On phones the illustration would push the sign-in button off the screen */
+  .login-art {
+    display: none;
+  }
+}
+/* =========================================================
+   Docs: banner, quick links and check cards
+   ========================================================= */
+.docs-hero {
+  margin-bottom: 8px;
+  padding: 32px;
+  background: var(--primary-soft);
+  border-radius: 18px;
+}
+
+.docs-hero-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border-radius: 12px;
+  color: var(--primary-text);
+}
+
+.docs-hero > p {
+  margin: 8px 0 22px;
+  color: var(--text-2);
+  font-size: 1.05rem;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.quick-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 0.86rem;
+  text-decoration: none;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.quick-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-card strong {
+  margin-top: 6px;
+  font-size: 0.98rem;
+}
+
+.quick-card > span:last-child {
+  color: var(--muted);
+}
+
+.docs-body .steps {
+  margin: 14px 0;
+}
+
+.bands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.docs-body .search {
+  margin-top: 14px;
+}
+
+.docs-body .filters {
+  margin-bottom: 8px;
+}
+
+/* Each check is a card with a coloured edge, like a finding in a report */
+.doc-rule {
+  border-left-width: 4px;
+}
+
+.doc-rule-critical {
+  border-left-color: var(--danger);
+}
+
+.doc-rule-high {
+  border-left-color: var(--high);
+}
+
+.doc-rule-medium {
+  border-left-color: var(--warning);
+}
+
+.doc-rule-low {
+  border-left-color: var(--info);
+}
+
+.doc-rule-info {
+  border-left-color: var(--muted);
+}
+
+.doc-rule-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.doc-rule-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  color: var(--text-2);
+}
+
+.doc-rule-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-rule-titles code {
+  font-size: 0.76rem;
+}
+
+.doc-what {
+  margin-bottom: 14px;
+}
+
+.doc-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.doc-fix {
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+
+@media (max-width: 720px) {
+  .docs-hero {
+    padding: 22px;
+  }
+
+  .doc-cols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .doc-rule-head {
+    flex-wrap: wrap;
+  }
+}
+
+/* Legal pages: readable line length next to the contents list */
+.legal-body {
+  max-width: 760px;
+}
+
+.prose h2 {
+  scroll-margin-top: 84px; /* so the sticky header doesn't cover a jumped-to section */
 }
