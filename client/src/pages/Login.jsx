@@ -15,9 +15,11 @@ const POINTS = [
 
 // Only these messages can ever appear. We never print text taken from the URL.
 const LOGIN_ERRORS = {
-  access_denied: "You cancelled the GitHub login. Click the button when you're ready.",
+  access_denied:
+    "You cancelled the GitHub login. Click the button when you're ready.",
   session: "That login attempt expired or was started twice. Please try again.",
-  failed: "We couldn't complete the login with GitHub. Please try again in a moment.",
+  failed:
+    "We couldn't complete the login with GitHub. Please try again in a moment.",
 };
 
 export default function Login() {
@@ -37,7 +39,11 @@ export default function Login() {
   if (error) {
     return (
       <div className="splash">
-        <ErrorState error={{ message: error }} onRetry={retry} showHome={false} />
+        <ErrorState
+          error={{ message: error }}
+          onRetry={retry}
+          showHome={false}
+        />
       </div>
     );
   }
@@ -52,8 +58,8 @@ export default function Login() {
         <div className="login-art-copy">
           <h2>Catch the problems hiding in your repositories.</h2>
           <p>
-            Secrets, vulnerable packages and missing basics, explained in plain English with the
-            exact fix.
+            Secrets, vulnerable packages and missing basics, explained in plain
+            English with the exact fix.
           </p>
         </div>
         <ProductArt />
@@ -63,7 +69,9 @@ export default function Login() {
         <div className="login-form">
           <Logo size={34} />
           <h1>Welcome to RepoGuard</h1>
-          <p className="subtitle">Sign in with GitHub to audit your repositories.</p>
+          <p className="subtitle">
+            Sign in with GitHub to audit your repositories.
+          </p>
 
           {loginError && <Alert>{loginError}</Alert>}
 
@@ -79,8 +87,8 @@ export default function Login() {
           </ul>
 
           <p className="fine-print">
-            We only read public repositories. <Link to="/privacy">Privacy</Link> ·{" "}
-            <Link to="/terms">Terms</Link>
+            We only read public repositories. <Link to="/docs">Docs</Link> ·{" "}
+            <Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link>
           </p>
         </div>
       </section>

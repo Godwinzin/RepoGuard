@@ -1,8 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import Logo from "./Logo";
-import PublicLayout from "./PublicLayout";
-import Landing from "../pages/Landing";
+import Login from "../pages/Login";
 import { ErrorState } from "./ErrorState";
 
 export default function ProtectedRoute() {
@@ -27,15 +26,9 @@ export default function ProtectedRoute() {
   }
 
   if (!user) {
-    // The front door: visitors who aren't logged in see the landing page at the root address.
-    // Every other protected address still sends them to the login page.
-    if (pathname === "/") {
-      return (
-        <PublicLayout wide>
-          <Landing />
-        </PublicLayout>
-      );
-    }
+    // The front door: logged-out visitors see the sign-in page at the root address.
+    // Any other protected address sends them to /login.
+    if (pathname === "/") return <Login />;
     return <Navigate to="/login" replace />;
   }
 
